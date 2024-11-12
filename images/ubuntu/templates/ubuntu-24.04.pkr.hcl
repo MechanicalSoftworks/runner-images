@@ -142,11 +142,11 @@ source "azure-arm" "build_image" {
   client_secret                          = "${var.client_secret}"
   image_offer                            = "ubuntu-24_04-lts"
   image_publisher                        = "canonical"
-  image_sku                              = "server-gen1"
+  image_sku                              = "server"
   location                               = "${var.location}"
   managed_image_name                     = "${local.managed_image_name}"
   managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
-  os_disk_size_gb                        = "75"
+  os_disk_size_gb                        = "30"
   os_type                                = "Linux"
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
   subscription_id                        = "${var.subscription_id}"
@@ -313,8 +313,7 @@ provisioner "shell" {
       "${path.root}/../scripts/build/install-android-sdk.sh",
       "${path.root}/../scripts/build/install-pypy.sh",
       "${path.root}/../scripts/build/install-python.sh",
-      "${path.root}/../scripts/build/install-zstd.sh",
-      "${path.root}/../scripts/build/install-ninja.sh"
+      "${path.root}/../scripts/build/install-zstd.sh"
     ]
   }
 
@@ -362,31 +361,28 @@ provisioner "shell" {
   }
 
   provisioner "shell" {
-    environment_vars = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
-    inline           = ["pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}", "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"]
-  }
-
-  provisioner "file" {
-    destination = "${path.root}/../Ubuntu2404-Readme.md"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.md"
-  }
-
-  provisioner "file" {
-    destination = "${path.root}/../software-report.json"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.json"
-  }
-
-  provisioner "shell" {
     environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.image_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = ["${path.root}/../scripts/build/configure-system.sh"]
   }
 
-  provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
-  }
+  // provisioner "shell" {
+  //   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  // }
 
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+  }
 }
