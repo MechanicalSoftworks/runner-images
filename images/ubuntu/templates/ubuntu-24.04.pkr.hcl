@@ -151,11 +151,11 @@ source "azure-arm" "build_image" {
   client_secret                          = "${var.client_secret}"
   image_offer                            = "ubuntu-24_04-lts"
   image_publisher                        = "canonical"
-  image_sku                              = "server-gen1"
+  image_sku                              = "server"
   location                               = "${var.location}"
   managed_image_name                     = "${local.managed_image_name}"
   managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
-  os_disk_size_gb                        = "75"
+  os_disk_size_gb                        = "30"
   os_type                                = "Linux"
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
   subscription_id                        = "${var.subscription_id}"
@@ -277,52 +277,10 @@ provisioner "shell" {
       "${path.root}/../scripts/build/install-actions-cache.sh",
       "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-apt-common.sh",
-      "${path.root}/../scripts/build/install-azcopy.sh",
-      "${path.root}/../scripts/build/install-azure-cli.sh",
-      "${path.root}/../scripts/build/install-azure-devops-cli.sh",
-      "${path.root}/../scripts/build/install-bicep.sh",
-      "${path.root}/../scripts/build/install-apache.sh",
-      "${path.root}/../scripts/build/install-aws-tools.sh",
-      "${path.root}/../scripts/build/install-clang.sh",
-      "${path.root}/../scripts/build/install-swift.sh",
-      "${path.root}/../scripts/build/install-cmake.sh",
       "${path.root}/../scripts/build/install-codeql-bundle.sh",
       "${path.root}/../scripts/build/install-container-tools.sh",
-      "${path.root}/../scripts/build/install-dotnetcore-sdk.sh",
-      "${path.root}/../scripts/build/install-microsoft-edge.sh",
-      "${path.root}/../scripts/build/install-gcc-compilers.sh",
-      "${path.root}/../scripts/build/install-firefox.sh",
-      "${path.root}/../scripts/build/install-gfortran.sh",
-      "${path.root}/../scripts/build/install-git.sh",
-      "${path.root}/../scripts/build/install-git-lfs.sh",
-      "${path.root}/../scripts/build/install-github-cli.sh",
-      "${path.root}/../scripts/build/install-google-chrome.sh",
-      "${path.root}/../scripts/build/install-google-cloud-cli.sh",
-      "${path.root}/../scripts/build/install-haskell.sh",
-      "${path.root}/../scripts/build/install-java-tools.sh",
-      "${path.root}/../scripts/build/install-kubernetes-tools.sh",
-      "${path.root}/../scripts/build/install-miniconda.sh",
-      "${path.root}/../scripts/build/install-kotlin.sh",
-      "${path.root}/../scripts/build/install-mysql.sh",
-      "${path.root}/../scripts/build/install-nginx.sh",
-      "${path.root}/../scripts/build/install-nvm.sh",
-      "${path.root}/../scripts/build/install-nodejs.sh",
-      "${path.root}/../scripts/build/install-bazel.sh",
-      "${path.root}/../scripts/build/install-php.sh",
-      "${path.root}/../scripts/build/install-postgresql.sh",
-      "${path.root}/../scripts/build/install-pulumi.sh",
-      "${path.root}/../scripts/build/install-ruby.sh",
-      "${path.root}/../scripts/build/install-rust.sh",
-      "${path.root}/../scripts/build/install-julia.sh",
-      "${path.root}/../scripts/build/install-selenium.sh",
-      "${path.root}/../scripts/build/install-packer.sh",
-      "${path.root}/../scripts/build/install-vcpkg.sh",
-      "${path.root}/../scripts/build/configure-dpkg.sh",
-      "${path.root}/../scripts/build/install-yq.sh",
-      "${path.root}/../scripts/build/install-android-sdk.sh",
       "${path.root}/../scripts/build/install-pypy.sh",
-      "${path.root}/../scripts/build/install-python.sh",
-      "${path.root}/../scripts/build/install-zstd.sh"
+      "${path.root}/../scripts/build/install-python.sh"
     ]
   }
 
@@ -370,31 +328,28 @@ provisioner "shell" {
   }
 
   provisioner "shell" {
-    environment_vars = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
-    inline           = ["pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}", "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"]
-  }
-
-  provisioner "file" {
-    destination = "${path.root}/../Ubuntu2404-Readme.md"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.md"
-  }
-
-  provisioner "file" {
-    destination = "${path.root}/../software-report.json"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.json"
-  }
-
-  provisioner "shell" {
     environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.image_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = ["${path.root}/../scripts/build/configure-system.sh"]
   }
 
-  provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
-  }
+  // provisioner "shell" {
+  //   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  // }
 
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+  }
 }
