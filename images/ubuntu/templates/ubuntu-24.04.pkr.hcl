@@ -146,7 +146,7 @@ source "azure-arm" "build_image" {
   location                               = "${var.location}"
   managed_image_name                     = "${local.managed_image_name}"
   managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
-  os_disk_size_gb                        = "30"
+  os_disk_size_gb                        = "75"
   os_type                                = "Linux"
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
   subscription_id                        = "${var.subscription_id}"
@@ -359,6 +359,23 @@ provisioner "shell" {
     pause_before        = "1m0s"
     scripts             = ["${path.root}/../scripts/build/cleanup.sh"]
     start_retry_timeout = "10m"
+  }
+
+  provisioner "shell" {
+    environment_vars = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
+    inline           = ["pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}", "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"]
+  }
+
+  provisioner "file" {
+    destination = "${path.root}/../Ubuntu2404-Readme.md"
+    direction   = "download"
+    source      = "${var.image_folder}/software-report.md"
+  }
+
+  provisioner "file" {
+    destination = "${path.root}/../software-report.json"
+    direction   = "download"
+    source      = "${var.image_folder}/software-report.json"
   }
 
   provisioner "shell" {
