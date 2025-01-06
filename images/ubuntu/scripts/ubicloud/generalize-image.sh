@@ -32,10 +32,13 @@ sleep 30
 # It blocks booting the VM if it's not disabled
 systemctl disable hv-kvp-daemon.service
 
-# Delete the Azure Linux Agent
-apt -y purge walinuxagent
-rm -rf /var/lib/waagent
-rm -f /var/log/waagent.log
+#
+# !!! Keep this, so we can use Azure to offload extra capacity !!!
+# 
+## Delete the Azure Linux Agent
+#apt -y purge walinuxagent
+#rm -rf /var/lib/waagent
+#rm -f /var/log/waagent.log
 
 # Clean up cloud-init logs and cache to run it again on first boot
 cloud-init clean --logs --seed
