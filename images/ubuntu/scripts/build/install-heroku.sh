@@ -9,6 +9,7 @@ GPG_KEY="/usr/share/keyrings/heroku.gpg"
 REPO_PATH="/etc/apt/sources.list.d/heroku.list"
 
 # add heroku repository to apt
+curl -fsSL "${REPO_URL}/release.key" | apt-key add -
 curl -fsSL "${REPO_URL}/release.key" | gpg --dearmor -o $GPG_KEY
 echo "deb [trusted=yes] $REPO_URL ./" > $REPO_PATH
 
