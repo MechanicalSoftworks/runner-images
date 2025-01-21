@@ -11,6 +11,7 @@ source_list=/etc/apt/sources.list.d/eslerlang.list
 source_key=/usr/share/keyrings/eslerlang.gpg
 
 # Install Erlang
+wget -q -O - https://binaries2.erlang-solutions.com/GPG-KEY-pmanager.asc | apt-key add -
 wget -q -O - https://binaries2.erlang-solutions.com/GPG-KEY-pmanager.asc | gpg --dearmor > $source_key
 echo "deb [signed-by=$source_key]  https://binaries2.erlang-solutions.com/ubuntu $(lsb_release -cs)-esl-erlang-25 contrib" > $source_list
 apt-get update
