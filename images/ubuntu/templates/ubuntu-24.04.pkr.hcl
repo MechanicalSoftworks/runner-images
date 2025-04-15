@@ -131,7 +131,7 @@ variable "virtual_network_subnet_name" {
 
 variable "vm_size" {
   type    = string
-  default = "Standard_D2s_v4"
+  default = "Standard_B2as_v2"
 }
 
 source "azure-arm" "build_image" {
