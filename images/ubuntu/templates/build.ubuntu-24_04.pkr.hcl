@@ -209,11 +209,11 @@ provisioner "shell" {
     source      = "${var.image_folder}/software-report.md"
   }
 
-  provisioner "file" {
-    destination = "${path.root}/../software-report.json"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.json"
-  }
+  //provisioner "file" {
+  //  destination = "${path.root}/../software-report.json"
+  //  direction   = "download"
+  //  source      = "${var.image_folder}/software-report.json"
+  //}
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.image_folder}"]
@@ -224,12 +224,23 @@ provisioner "shell" {
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/../scripts/build/post-build-validation.sh"]
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
   }
 
   provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/build/post-build-validation.sh"]
   }
+
+  //provisioner "shell" {
+  //  execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //  inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  //}
 
 }
