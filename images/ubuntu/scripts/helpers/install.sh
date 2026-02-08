@@ -4,6 +4,15 @@
 ##  Desc:  Helper functions for installing tools
 ################################################################################
 
+get_arch() {
+    arch=$(arch)
+    if [[ $arch == "arm64" ]]; then
+        echo "arm64"
+    else
+        echo "x64"
+    fi
+}
+
 download_with_retry() {
     local url=$1
     local download_path=$2
