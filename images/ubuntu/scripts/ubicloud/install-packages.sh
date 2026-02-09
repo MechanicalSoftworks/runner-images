@@ -20,6 +20,6 @@ if is_ubuntu24; then
 fi
 
 # Install ubi CLI
-download_url=$(resolve_github_release_asset_url "ubicloud/cli" "test(\"$(get_arch "linux-amd64" "linux-arm64")-.*.tar.gz$\")" "latest")
+download_url=$(resolve_github_release_asset_url "actions/cli" "test(\"$(get_arch "linux-amd64" "linux-arm64")-.*.tar.gz$\")" "latest")
 archive_path=$(download_with_retry "$download_url")
 tar xzf "$archive_path" -C /usr/local/bin ubi
