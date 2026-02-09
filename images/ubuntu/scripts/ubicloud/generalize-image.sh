@@ -68,6 +68,7 @@ fi
 
 sync
 
-# Delete the packer account
+# Deactivate the packer account (can't delete because the packer user is running this script!)
 touch /var/run/utmp
-userdel -f -r packer
+passwd -l packer
+usermod -s /usr/sbin/nologin packer
