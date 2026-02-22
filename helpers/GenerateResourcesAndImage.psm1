@@ -410,3 +410,5 @@ Function GenerateResourcesAndImage {
         Write-Verbose "Cleanup completed."
     }
 }
+
+Export-ModuleMember -Function GenerateResourcesAndImage
