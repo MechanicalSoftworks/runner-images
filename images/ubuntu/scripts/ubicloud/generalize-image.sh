@@ -15,10 +15,13 @@ systemctl disable hv-kvp-daemon.service
 sed -i 's/^refclock PHC \/dev\/ptp_hyperv/# &/' /etc/chrony/chrony.conf
 systemctl restart chronyd
 
-# Delete the Azure Linux Agent
-apt -y purge walinuxagent
-rm -rf /var/lib/waagent
-rm -f /var/log/waagent.log
+#
+# !!! Keep this, so we can use Azure to offload extra capacity !!!
+# 
+## Delete the Azure Linux Agent
+#apt -y purge walinuxagent
+#rm -rf /var/lib/waagent
+#rm -f /var/log/waagent.log
 
 # Clean up cloud-init logs and cache to run it again on first boot
 cloud-init clean --logs --seed
